@@ -45,7 +45,7 @@ class DQN(nn.Module):
 action_space = gym.spaces.Discrete(12)  # COMPLEX_MOVEMENT
 n_actions = action_space.n
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-WEIGHT_PATH = "mario_dqn_final1.pth"
+WEIGHT_PATH = "mario_dqn_final.pth"
 
 policy_net = DQN(n_actions).to(device)
 
