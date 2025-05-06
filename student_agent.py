@@ -37,7 +37,7 @@ class DQN(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv(x)
         x = x.view(x.size(0), -1)  # manual flattening
-        return self.fc(x)
+        return self.fc(x) 
 
 # ------------------------------------------------------------
 # Setup: Environment, Action Space, and Network Initialization
@@ -45,7 +45,7 @@ class DQN(nn.Module):
 action_space = gym.spaces.Discrete(12)  # COMPLEX_MOVEMENT
 n_actions = action_space.n
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-WEIGHT_PATH = "mario_dqn_final.pth"
+WEIGHT_PATH = "mario_dqn_final1.pth"
 
 policy_net = DQN(n_actions).to(device)
 
