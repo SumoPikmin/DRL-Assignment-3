@@ -6,7 +6,7 @@ import cv2
 import torch
 import torch.nn as nn
 import numpy as np
-from collections import deque
+from collections import deque 
 
 # ------------------------------------------------------------
 # Frame Preprocessing
