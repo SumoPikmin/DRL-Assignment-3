@@ -24,21 +24,21 @@ def _preprocess_frame(frame: np.ndarray) -> np.ndarray:
 class DQN(nn.Module):
     def __init__(self, n_actions: int):
         super().__init__()
-        self.net = nn.Sequential(
-            nn.Conv2d(4, 32, kernel_size=8, stride=4),  # 84 → 20
-            nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=4, stride=2),  # 20 → 9
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1),  # 9 → 7
-            nn.ReLU(),
+        self.conv = nn.Sequential(
+            nn.Conv2d(4, 32, kernel_size=8, stride=4), nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=4, stride=2), nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1), nn.ReLU(),
+        )
+        self.fc = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(64 * 7 * 7, 512),
-            nn.ReLU(),
-            nn.Linear(512, n_actions)
+            nn.Linear(64 * 7 * 7, 512), nn.ReLU(),
+            nn.Linear(512, n_actions),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net(x)
+        x = self.conv(x)
+        return self.fc(x)
+
 
 # ------------------------------------------------------------
 # Setup: Environment, Action Space, and Network Initialization
