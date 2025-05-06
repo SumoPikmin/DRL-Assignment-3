@@ -18,26 +18,22 @@ def _preprocess_frame(frame: np.ndarray) -> np.ndarray:
     return frame
 
 # ------------------------------------------------------------
-# DQN – Deep Q‑Network Architecture
-# (Based on the 2015 Nature DQN paper)
+# Updated DQN (Matches Training Architecture)
 # ------------------------------------------------------------
 class DQN(nn.Module):
-    def __init__(self, n_actions: int):
+    def __init__(self, num_actions):
         super().__init__()
-        self.conv = nn.Sequential(
+        self.layers = nn.Sequential(
             nn.Conv2d(4, 32, kernel_size=8, stride=4), nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=4, stride=2), nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1), nn.ReLU(),
-        )
-        self.fc = nn.Sequential(
+            nn.Flatten(),
             nn.Linear(64 * 7 * 7, 512), nn.ReLU(),
-            nn.Linear(512, n_actions),
+            nn.Linear(512, num_actions),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.conv(x)
-        x = x.view(x.size(0), -1)  # manual flattening
-        return self.fc(x) 
+    def forward(self, x):
+        return self.layers(x)
 
 # ------------------------------------------------------------
 # Setup: Environment, Action Space, and Network Initialization
@@ -51,20 +47,13 @@ policy_net = DQN(n_actions).to(device)
 
 try:
     checkpoint = torch.load(WEIGHT_PATH, map_location=device)
-
-    # If it's a checkpoint with multiple components
-    if "policy_net" in checkpoint:
-        state_dict = checkpoint["policy_net"]
-    else:
-        state_dict = checkpoint  # raw state_dict
-
+    state_dict = checkpoint["policy_net"] if "policy_net" in checkpoint else checkpoint
     policy_net.load_state_dict(state_dict)
     policy_net.eval()
     use_network = True
 except FileNotFoundError:
     print(f"[student_agent] WARNING: '{WEIGHT_PATH}' not found. Agent will act randomly.")
     use_network = False
-
 
 # ------------------------------------------------------------
 # Agent for Evaluation – Acts Greedily with Respect to Q
@@ -82,20 +71,16 @@ class Agent:
         if not use_network:
             return action_space.sample()
 
-        # Reuse last action if skipping
         if self.skip_count > 0:
             self.skip_count -= 1
             return self.last_action
 
-        # Preprocess and store frame
         frame = _preprocess_frame(observation)
         self.frames.append(frame)
 
-        # Pad to 4 frames if needed (initial steps)
         while len(self.frames) < 4:
             self.frames.append(frame)
 
-        # Prepare state tensor: shape (1, 4, 84, 84)
         state = np.stack(self.frames, axis=0)
         state = torch.from_numpy(state).unsqueeze(0).to(device, dtype=torch.float32) / 255.0
 
@@ -104,5 +89,5 @@ class Agent:
             action = int(q_values.argmax(dim=1).item())
 
         self.last_action = action
-        self.skip_count = 3  # Repeat this action for next 3 steps
+        self.skip_count = 3
         return action
