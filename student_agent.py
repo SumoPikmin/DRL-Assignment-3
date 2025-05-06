@@ -16,7 +16,7 @@ def _preprocess_frame(frame: np.ndarray) -> np.ndarray:
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
     frame = cv2.resize(frame, (84, 84), interpolation=cv2.INTER_AREA)
     return frame
-
+ 
 # ------------------------------------------------------------
 # Updated DQN (Matches Training Architecture)
 # ------------------------------------------------------------
