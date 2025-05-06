@@ -45,19 +45,27 @@ class DQN(nn.Module):
 # ------------------------------------------------------------
 action_space = gym.spaces.Discrete(12)  # COMPLEX_MOVEMENT
 n_actions = action_space.n
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 WEIGHT_PATH = "mario_dqn_final.pth"
 
 policy_net = DQN(n_actions).to(device)
 
 try:
-    state_dict = torch.load(WEIGHT_PATH, map_location=device)
+    checkpoint = torch.load(WEIGHT_PATH, map_location=device)
+
+    # If it's a checkpoint with multiple components
+    if "policy_net" in checkpoint:
+        state_dict = checkpoint["policy_net"]
+    else:
+        state_dict = checkpoint  # raw state_dict
+
     policy_net.load_state_dict(state_dict)
     policy_net.eval()
     use_network = True
 except FileNotFoundError:
     print(f"[student_agent] WARNING: '{WEIGHT_PATH}' not found. Agent will act randomly.")
     use_network = False
+
 
 # ------------------------------------------------------------
 # Agent for Evaluation – Acts Greedily with Respect to Q
