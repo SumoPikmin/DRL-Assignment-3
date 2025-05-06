@@ -30,15 +30,14 @@ class DQN(nn.Module):
             nn.Conv2d(64, 64, kernel_size=3, stride=1), nn.ReLU(),
         )
         self.fc = nn.Sequential(
-            nn.Flatten(),
             nn.Linear(64 * 7 * 7, 512), nn.ReLU(),
             nn.Linear(512, n_actions),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv(x)
+        x = x.view(x.size(0), -1)  # manual flattening
         return self.fc(x)
-
 
 # ------------------------------------------------------------
 # Setup: Environment, Action Space, and Network Initialization
